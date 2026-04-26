@@ -16,7 +16,6 @@ body {
   overflow: hidden;
 }
 
-/* Envelope */
 .envelope {
   width: 250px;
   height: 180px;
@@ -30,7 +29,6 @@ body {
   transform: scale(1.05);
 }
 
-/* Tampa */
 .flap {
   width: 0;
   height: 0;
@@ -44,7 +42,6 @@ body {
   transition: transform 0.6s;
 }
 
-/* Imagem */
 .photo {
   width: 238px;
   height: 357px;
@@ -53,13 +50,11 @@ body {
   top: -150px;
   left: 6px;
   border-radius: 10px;
-
   transform: translateY(100px);
   opacity: 0;
   transition: all 0.6s;
 }
 
-/* Botão */
 #btn {
   position: absolute;
   bottom: -40px;
@@ -75,7 +70,6 @@ body {
   transition: 0.5s;
 }
 
-/* Animação */
 .open .flap {
   transform: rotateX(180deg);
 }
@@ -90,7 +84,6 @@ body {
   bottom: -60px;
 }
 
-/* Corações */
 .heart {
   position: absolute;
   color: red;
@@ -106,19 +99,51 @@ body {
 
 <body>
 
-<!-- Música -->
 <audio id="music" src="musica.mp3"></audio>
 
 <div class="envelope" onclick="openLetter()">
   <div class="flap"></div>
-
-  <!-- IMAGEM -->
   <img src="imagem.jfif" class="photo">
-
-  <!-- BOTÃO -->
   <button id="btn" onclick="event.stopPropagation(); responder()">Responder</button>
 </div>
 
+<!-- 🔥 FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCKa219_gQ7_1Br1fCM-PHW3ev9AEzZZJ8",
+  authDomain: "book4so.firebaseapp.com",
+  projectId: "book4so",
+  storageBucket: "book4so.firebasestorage.app",
+  messagingSenderId: "39366366793",
+  appId: "1:39366366793:web:53cd189032c6d598b45198",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+async function contarAbertura() {
+  const ref = doc(db, "cartas", "cartaSo");
+  const snap = await getDoc(ref);
+
+  if (snap.exists()) {
+    await updateDoc(ref, {
+      quantidade: increment(1)
+    });
+  } else {
+    await setDoc(ref, {
+      quantidade: 1
+    });
+  }
+}
+
+// deixa global
+window.contarAbertura = contarAbertura;
+</script>
+
+<!-- 🎮 LÓGICA -->
 <script>
 let heartInterval = null;
 let opened = false;
@@ -127,13 +152,13 @@ function openLetter() {
   const env = document.querySelector(".envelope");
   env.classList.add("open");
 
+  // 🔥 CONTA TODA VEZ QUE CLICAR
+  contarAbertura();
+
   if (!opened) {
     opened = true;
 
-    // Música
     document.getElementById("music").play();
-
-    // Corações
     createHearts();
   }
 }
