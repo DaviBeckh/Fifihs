@@ -107,14 +107,15 @@ body {
   <button id="btn" onclick="event.stopPropagation(); responder()">Responder</button>
 </div>
 
-<!-- 🔥 FIREBASE -->
+<!-- 🔥 FIREBASE REALTIME -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCKa219_gQ7_1Br1fCM-PHW3ev9AEzZZJ8",
   authDomain: "book4so.firebaseapp.com",
+  databaseURL: "https://book4so-default-rtdb.firebaseio.com",
   projectId: "book4so",
   storageBucket: "book4so.firebasestorage.app",
   messagingSenderId: "39366366793",
@@ -122,24 +123,21 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
 async function contarAbertura() {
-  const ref = doc(db, "cartas", "cartaSo");
-  const snap = await getDoc(ref);
+  const cartaRef = ref(db, "cartaSo");
 
-  if (snap.exists()) {
-    await updateDoc(ref, {
-      quantidade: increment(1)
-    });
+  const snapshot = await get(cartaRef);
+
+  if (snapshot.exists()) {
+    const valorAtual = snapshot.val();
+    await set(cartaRef, valorAtual + 1);
   } else {
-    await setDoc(ref, {
-      quantidade: 1
-    });
+    await set(cartaRef, 1);
   }
 }
 
-// deixa global
 window.contarAbertura = contarAbertura;
 </script>
 
@@ -152,7 +150,7 @@ function openLetter() {
   const env = document.querySelector(".envelope");
   env.classList.add("open");
 
-  // 🔥 CONTA TODA VEZ QUE CLICAR
+  // 🔥 conta toda vez
   contarAbertura();
 
   if (!opened) {
